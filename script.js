@@ -18,11 +18,11 @@ function initTelegramApp() {
     const userNameElement = document.getElementById('user-name');
     if (tg.initDataUnsafe?.user) {
         const user = tg.initDataUnsafe.user;
-        userNameElement.textContent = user.first_name || 'Usuario';
+        userNameElement.textContent = user.first_name || 'User';
     }
     
     // Set up main button
-    tg.MainButton.setText('Cerrar');
+    tg.MainButton.setText('Close');
     tg.MainButton.onClick(() => tg.close());
     tg.MainButton.show();
 }
@@ -46,16 +46,16 @@ const sampleCars = [
         mileage: '35,000 km',
         currentBid: 15000,
         minBid: 15500,
-        timeLeft: '2 días',
+        timeLeft: '2 days',
         image: 'https://via.placeholder.com/300x200/0066cc/ffffff?text=Toyota+Camry',
-        description: 'Excelente condición, un solo dueño, mantenimiento al día.',
+        description: 'Excellent condition, single owner, up-to-date maintenance.',
         specs: {
-            'Motor': '2.5L I4',
-            'Transmisión': 'Automática',
-            'Combustible': 'Gasolina',
-            'Color': 'Blanco',
-            'Tracción': 'Delantera',
-            'Asientos': '5'
+            'Engine': '2.5L I4',
+            'Transmission': 'Automatic',
+            'Fuel': 'Gasoline',
+            'Color': 'White',
+            'Drive': 'Front-wheel',
+            'Seats': '5'
         }
     },
     {
@@ -66,16 +66,16 @@ const sampleCars = [
         mileage: '25,000 km',
         currentBid: 18000,
         minBid: 18500,
-        timeLeft: '1 día',
+        timeLeft: '1 day',
         image: 'https://via.placeholder.com/300x200/cc0000/ffffff?text=Honda+Civic',
-        description: 'Como nuevo, garantía extendida, excelente economía de combustible.',
+        description: 'Like new, extended warranty, excellent fuel economy.',
         specs: {
-            'Motor': '1.5L Turbo',
-            'Transmisión': 'CVT',
-            'Combustible': 'Gasolina',
-            'Color': 'Rojo',
-            'Tracción': 'Delantera',
-            'Asientos': '5'
+            'Engine': '1.5L Turbo',
+            'Transmission': 'CVT',
+            'Fuel': 'Gasoline',
+            'Color': 'Red',
+            'Drive': 'Front-wheel',
+            'Seats': '5'
         }
     },
     {
@@ -86,16 +86,16 @@ const sampleCars = [
         mileage: '45,000 km',
         currentBid: 25000,
         minBid: 25500,
-        timeLeft: '5 horas',
+        timeLeft: '5 hours',
         image: 'https://via.placeholder.com/300x200/003366/ffffff?text=Ford+F-150',
-        description: 'Pickup robusta, ideal para trabajo, excelente capacidad de carga.',
+        description: 'Rugged pickup, ideal for work, excellent load capacity.',
         specs: {
-            'Motor': '3.5L V6',
-            'Transmisión': '10-Speed Auto',
-            'Combustible': 'Gasolina',
-            'Color': 'Azul',
-            'Tracción': '4WD',
-            'Asientos': '5'
+            'Engine': '3.5L V6',
+            'Transmission': '10-Speed Auto',
+            'Fuel': 'Gasoline',
+            'Color': 'Blue',
+            'Drive': '4WD',
+            'Seats': '5'
         }
     },
     {
@@ -106,16 +106,16 @@ const sampleCars = [
         mileage: '15,000 km',
         currentBid: 20000,
         minBid: 20500,
-        timeLeft: '3 días',
+        timeLeft: '3 days',
         image: 'https://via.placeholder.com/300x200/666666/ffffff?text=Chevrolet+Malibu',
-        description: 'Sedán moderno con tecnología avanzada, muy poco uso.',
+        description: 'Modern sedan with advanced technology, very low usage.',
         specs: {
-            'Motor': '1.5L Turbo',
-            'Transmisión': 'CVT',
-            'Combustible': 'Gasolina',
-            'Color': 'Gris',
-            'Tracción': 'Delantera',
-            'Asientos': '5'
+            'Engine': '1.5L Turbo',
+            'Transmission': 'CVT',
+            'Fuel': 'Gasoline',
+            'Color': 'Gray',
+            'Drive': 'Front-wheel',
+            'Seats': '5'
         }
     }
 ];
@@ -240,24 +240,59 @@ function showSkeletonLoading(container) {
 function createCarCard(car) {
     const card = document.createElement('div');
     card.className = 'car-card';
-    card.innerHTML = `
-        <img src="${car.image}" alt="${car.title}" class="car-image" onerror="this.src='https://via.placeholder.com/300x200/cccccc/666666?text=No+Image'">
-        <div class="car-info">
-            <div class="car-title">${car.title}</div>
-            <div class="car-details">
-                <span>${car.year} • ${car.mileage}</span>
-                <span>⏰ ${car.timeLeft}</span>
-            </div>
-            <div class="car-price">$${car.currentBid.toLocaleString()}</div>
-            <div class="car-actions">
-                <button class="bid-btn" onclick="openBidModal(${car.id})">Pujar</button>
-                <button class="favorite-btn ${appState.favorites.includes(car.id) ? 'active' : ''}" 
-                        onclick="toggleFavorite(${car.id})">
-                    ${appState.favorites.includes(car.id) ? '❤️' : '🤍'}
-                </button>
-            </div>
+    
+    // Create image container with placeholder
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'car-image-container';
+    
+    // Create placeholder
+    const placeholder = document.createElement('div');
+    placeholder.className = 'car-image-placeholder';
+    placeholder.innerHTML = '🚗';
+    
+    // Create actual image
+    const img = document.createElement('img');
+    img.className = 'car-image car-image-loading';
+    img.alt = car.title;
+    img.onerror = function() {
+        this.style.display = 'none';
+        placeholder.innerHTML = '📷';
+    };
+    img.onload = function() {
+        this.classList.remove('car-image-loading');
+        this.classList.add('car-image-loaded');
+        placeholder.style.display = 'none';
+    };
+    
+    imageContainer.appendChild(placeholder);
+    imageContainer.appendChild(img);
+    
+    // Set image source after setup to prevent flickering
+    setTimeout(() => {
+        img.src = car.image;
+    }, 50);
+    
+    card.appendChild(imageContainer);
+    
+    const carInfo = document.createElement('div');
+    carInfo.className = 'car-info';
+    carInfo.innerHTML = `
+        <div class="car-title">${car.title}</div>
+        <div class="car-details">
+            <span>${car.year} • ${car.mileage}</span>
+            <span>⏰ ${car.timeLeft}</span>
+        </div>
+        <div class="car-price">$${car.currentBid.toLocaleString()}</div>
+        <div class="car-actions">
+            <button class="bid-btn" onclick="openBidModal(${car.id})">Bid</button>
+            <button class="favorite-btn ${appState.favorites.includes(car.id) ? 'active' : ''}" 
+                    onclick="toggleFavorite(${car.id})">
+                ${appState.favorites.includes(car.id) ? '❤️' : '🤍'}
+            </button>
         </div>
     `;
+    
+    card.appendChild(carInfo);
     
     // Add click listener for car details
     card.addEventListener('click', function(e) {
@@ -310,7 +345,7 @@ function displayCars(cars) {
     carsGrid.innerHTML = '';
     
     if (cars.length === 0) {
-        carsGrid.innerHTML = '<div class="empty-state"><p>No se encontraron carros</p></div>';
+        carsGrid.innerHTML = '<div class="empty-state"><p>No cars found</p></div>';
         return;
     }
     
@@ -327,10 +362,10 @@ function toggleFavorite(carId) {
     
     if (index > -1) {
         appState.favorites.splice(index, 1);
-        showToast('❤️ Eliminado de favoritos', 'warning');
+        showToast('❤️ Removed from favorites', 'warning');
     } else {
         appState.favorites.push(carId);
-        showToast('💖 Agregado a favoritos', 'success');
+        showToast('💖 Added to favorites', 'success');
         isAdded = true;
     }
     
@@ -375,8 +410,8 @@ function loadFavorites() {
     if (favoriteCars.length === 0) {
         favoritesGrid.innerHTML = `
             <div class="empty-state">
-                <p>No tienes carros favoritos aún</p>
-                <p>Agrega carros a favoritos desde las subastas</p>
+                <p>No favorite cars yet</p>
+                <p>Add cars to favorites from auctions</p>
             </div>
         `;
         return;
@@ -398,11 +433,11 @@ function openCarDetail(carId) {
         <img src="${car.image}" alt="${car.title}" class="car-detail-image" onerror="this.src='https://via.placeholder.com/400x250/cccccc/666666?text=No+Image'">
         <div class="car-detail-info">
             <h3>${car.title}</h3>
-            <div class="car-price">Puja actual: $${car.currentBid.toLocaleString()}</div>
-            <p><strong>Tiempo restante:</strong> ${car.timeLeft}</p>
-            <p><strong>Descripción:</strong> ${car.description}</p>
+            <div class="car-price">Current bid: $${car.currentBid.toLocaleString()}</div>
+            <p><strong>Time remaining:</strong> ${car.timeLeft}</p>
+            <p><strong>Description:</strong> ${car.description}</p>
             
-            <h4>Especificaciones:</h4>
+            <h4>Specifications:</h4>
             <div class="car-detail-specs">
                 ${Object.entries(car.specs).map(([key, value]) => `
                     <div><strong>${key}:</strong> ${value}</div>
@@ -410,10 +445,10 @@ function openCarDetail(carId) {
             </div>
             
             <div class="car-actions">
-                <button class="bid-btn" onclick="openBidModal(${car.id}); closeModal();">Hacer Puja</button>
+                <button class="bid-btn" onclick="openBidModal(${car.id}); closeModal();">Place Bid</button>
                 <button class="favorite-btn ${appState.favorites.includes(car.id) ? 'active' : ''}" 
                         onclick="toggleFavorite(${car.id})">
-                    ${appState.favorites.includes(car.id) ? '❤️ Favorito' : '🤍 Agregar a favoritos'}
+                    ${appState.favorites.includes(car.id) ? '❤️ Favorite' : '🤍 Add to favorites'}
                 </button>
             </div>
         </div>
@@ -429,9 +464,9 @@ function openBidModal(carId) {
     const currentBidInfo = document.getElementById('current-bid-info');
     currentBidInfo.innerHTML = `
         <h4>${car.title}</h4>
-        <div class="current-bid-amount">Puja actual: $${car.currentBid.toLocaleString()}</div>
-        <p>Puja mínima: $${car.minBid.toLocaleString()}</p>
-        <p>Tiempo restante: ${car.timeLeft}</p>
+        <div class="current-bid-amount">Current bid: $${car.currentBid.toLocaleString()}</div>
+        <p>Minimum bid: $${car.minBid.toLocaleString()}</p>
+        <p>Time remaining: ${car.timeLeft}</p>
     `;
     
     const bidAmountInput = document.getElementById('bid-amount');
@@ -452,7 +487,7 @@ function placeBid() {
     if (!car) return;
     
     if (bidAmount < car.minBid) {
-        alert(`La puja mínima es $${car.minBid.toLocaleString()}`);
+        alert(`Minimum bid is $${car.minBid.toLocaleString()}`);
         return;
     }
     
@@ -477,13 +512,13 @@ function placeBid() {
     closeModal();
     
     // Show success message with toast
-    showToast(`🎉 ¡Puja exitosa! $${bidAmount.toLocaleString()}`, 'success');
+    showToast(`🎉 Bid successful! $${bidAmount.toLocaleString()}`, 'success');
     
     // Also show Telegram popup if available
     if (tg.showPopup) {
         tg.showPopup({
-            title: '¡Puja exitosa!',
-            message: `Tu puja de $${bidAmount.toLocaleString()} ha sido registrada.`,
+            title: 'Bid successful!',
+            message: `Your bid of $${bidAmount.toLocaleString()} has been registered.`,
             buttons: [{type: 'ok'}]
         });
     }
@@ -520,13 +555,13 @@ function saveProfile() {
     localStorage.setItem('profile', JSON.stringify(profile));
     
     // Show success message with toast
-    showToast('✅ Perfil guardado exitosamente', 'success');
+    showToast('✅ Profile saved successfully', 'success');
     
     // Also show Telegram popup if available
     if (tg.showPopup) {
         tg.showPopup({
-            title: 'Perfil guardado',
-            message: 'Tu perfil ha sido actualizado exitosamente.',
+            title: 'Profile saved',
+            message: 'Your profile has been updated successfully.',
             buttons: [{type: 'ok'}]
         });
     }
@@ -541,7 +576,7 @@ function loadBiddingHistory() {
     const historyList = document.getElementById('bidding-history-list');
     
     if (appState.biddingHistory.length === 0) {
-        historyList.innerHTML = '<div class="empty-state"><p>No has hecho pujas aún</p></div>';
+        historyList.innerHTML = '<div class="empty-state"><p>No bids placed yet</p></div>';
         return;
     }
     
@@ -556,7 +591,7 @@ function loadBiddingHistory() {
             </div>
             <div>
                 <div>${new Date(bid.timestamp).toLocaleDateString()}</div>
-                <div><span class="status-${bid.status}">${bid.status === 'active' ? 'Activa' : 'Finalizada'}</span></div>
+                <div><span class="status-${bid.status}">${bid.status === 'active' ? 'Active' : 'Finished'}</span></div>
             </div>
         `;
         historyList.appendChild(historyItem);
@@ -569,7 +604,7 @@ setInterval(() => {
     appState.cars.forEach(car => {
         // This is a simplified simulation - in real app, this would come from server
         if (Math.random() < 0.1) { // 10% chance to update
-            const timeOptions = ['30 min', '1 hora', '2 horas', '5 horas', '1 día', '2 días'];
+            const timeOptions = ['30 min', '1 hour', '2 hours', '5 hours', '1 day', '2 days'];
             car.timeLeft = timeOptions[Math.floor(Math.random() * timeOptions.length)];
         }
     });
@@ -690,23 +725,23 @@ function hideSearchSuggestions() {
 // Improved bidding experience
 function validateBidAmount(carId, amount) {
     const car = appState.cars.find(c => c.id === carId);
-    if (!car) return { valid: false, message: 'Carro no encontrado' };
+    if (!car) return { valid: false, message: 'Car not found' };
     
     if (amount < car.minBid) {
         return { 
             valid: false, 
-            message: `La puja mínima es $${car.minBid.toLocaleString()}` 
+            message: `Minimum bid is $${car.minBid.toLocaleString()}` 
         };
     }
     
     if (amount <= car.currentBid) {
         return { 
             valid: false, 
-            message: `Tu puja debe ser mayor a $${car.currentBid.toLocaleString()}` 
+            message: `Your bid must be higher than $${car.currentBid.toLocaleString()}` 
         };
     }
     
-    return { valid: true, message: 'Puja válida' };
+    return { valid: true, message: 'Valid bid' };
 }
 
 // Enhanced placeBid with better validation
@@ -723,7 +758,7 @@ function placeBidEnhanced() {
     // Show loading state
     const bidButton = document.getElementById('place-bid');
     const originalText = bidButton.textContent;
-    bidButton.textContent = 'Procesando...';
+    bidButton.textContent = 'Processing...';
     bidButton.disabled = true;
     
     // Simulate API call delay
@@ -755,7 +790,7 @@ function placeBidEnhanced() {
         bidButton.disabled = false;
         
         // Show success message with toast
-        showToast(`🎉 ¡Puja exitosa! $${bidAmount.toLocaleString()}`, 'success');
+        showToast(`🎉 Bid successful! $${bidAmount.toLocaleString()}`, 'success');
         
         // Haptic feedback
         if (tg.HapticFeedback) {

@@ -13,9 +13,28 @@ body {
     overflow-x: hidden;
 }
 
-/* Smooth transitions for all elements */
+/* Prevent layout shift and reduce transitions */
 * {
+    box-sizing: border-box;
+}
+
+/* Only apply transitions to specific elements to prevent flickering */
+.car-card,
+.bid-btn,
+.favorite-btn,
+.nav-tab,
+.modal,
+.toast {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent content jumping during load */
+.cars-grid {
+    min-height: 400px;
+}
+
+.car-card {
+    min-height: 350px;
 }
 
 /* Loading animations */
@@ -214,7 +233,48 @@ body {
     width: 100%;
     height: 200px;
     object-fit: cover;
-    background: #f0f0f0;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+    transition: opacity 0.3s ease;
+}
+
+.car-image-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #adb5bd;
+    position: relative;
+    overflow: hidden;
+}
+
+.car-image-placeholder::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shimmer 2s infinite;
+}
+
+.car-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.car-image-loading {
+    opacity: 0;
+}
+
+.car-image-loaded {
+    opacity: 1;
 }
 
 .car-info {

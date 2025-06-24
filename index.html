@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,35 +13,35 @@
         <header class="header">
             <h1>🚗 Car Auction</h1>
             <div class="user-info">
-                <span id="user-name">Cargando...</span>
+                <span id="user-name">Loading...</span>
                 <button id="profile-btn" class="profile-btn">👤</button>
             </div>
         </header>
 
         <!-- Navigation -->
         <nav class="nav-tabs">
-            <button class="nav-tab active" data-tab="auctions">Subastas</button>
-            <button class="nav-tab" data-tab="favorites">Favoritos</button>
-            <button class="nav-tab" data-tab="profile">Perfil</button>
+            <button class="nav-tab active" data-tab="auctions">Auctions</button>
+            <button class="nav-tab" data-tab="favorites">Favorites</button>
+            <button class="nav-tab" data-tab="profile">Profile</button>
         </nav>
 
         <!-- Auctions Tab -->
         <div id="auctions" class="tab-content active">
             <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Buscar carros..." autocomplete="off">
+                <input type="text" id="search-input" placeholder="Search cars..." autocomplete="off">
                 <button id="search-btn">🔍</button>
             </div>
             
             <div class="filters">
                 <select id="brand-filter">
-                    <option value="">Todas las marcas</option>
+                    <option value="">All brands</option>
                     <option value="toyota">Toyota</option>
                     <option value="honda">Honda</option>
                     <option value="ford">Ford</option>
                     <option value="chevrolet">Chevrolet</option>
                 </select>
                 <select id="price-filter">
-                    <option value="">Todos los precios</option>
+                    <option value="">All prices</option>
                     <option value="0-5000">$0 - $5,000</option>
                     <option value="5000-10000">$5,000 - $10,000</option>
                     <option value="10000-20000">$10,000 - $20,000</option>
@@ -58,8 +58,8 @@
         <div id="favorites" class="tab-content">
             <div id="favorites-grid" class="cars-grid">
                 <div class="empty-state">
-                    <p>No tienes carros favoritos aún</p>
-                    <p>Agrega carros a favoritos desde las subastas</p>
+                    <p>No favorite cars yet</p>
+                    <p>Add cars to favorites from auctions</p>
                 </div>
             </div>
         </div>
@@ -67,28 +67,28 @@
         <!-- Profile Tab -->
         <div id="profile" class="tab-content">
             <div class="profile-form">
-                <h2>Mi Perfil</h2>
+                <h2>My Profile</h2>
                 <div class="form-group">
-                    <label for="display-name">Nombre para mostrar</label>
-                    <input type="text" id="display-name" placeholder="Tu nombre">
+                    <label for="display-name">Display Name</label>
+                    <input type="text" id="display-name" placeholder="Your name">
                 </div>
                 <div class="form-group">
-                    <label for="phone">Teléfono</label>
+                    <label for="phone">Phone</label>
                     <input type="tel" id="phone" placeholder="+1 234 567 8900">
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="tu@email.com">
+                    <input type="email" id="email" placeholder="your@email.com">
                 </div>
                 <div class="form-group">
-                    <label for="location">Ubicación</label>
-                    <input type="text" id="location" placeholder="Ciudad, País">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" placeholder="City, Country">
                 </div>
-                <button id="save-profile" class="save-btn">Guardar Perfil</button>
+                <button id="save-profile" class="save-btn">Save Profile</button>
             </div>
 
             <div class="bidding-history">
-                <h3>Historial de Pujas</h3>
+                <h3>Bidding History</h3>
                 <div id="bidding-history-list">
                     <!-- Bidding history will be loaded here -->
                 </div>
@@ -111,13 +111,13 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <div class="bid-form">
-                <h3>Hacer Puja</h3>
+                <h3>Place Bid</h3>
                 <div id="current-bid-info"></div>
                 <div class="form-group">
-                    <label for="bid-amount">Tu puja ($)</label>
-                    <input type="number" id="bid-amount" min="0" step="100" placeholder="Ingresa tu puja">
+                    <label for="bid-amount">Your bid ($)</label>
+                    <input type="number" id="bid-amount" min="0" step="100" placeholder="Enter your bid">
                 </div>
-                <button id="place-bid" class="bid-btn">Hacer Puja</button>
+                <button id="place-bid" class="bid-btn">Place Bid</button>
             </div>
         </div>
     </div>
