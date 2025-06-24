@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Auction Bot</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚗 Car Auction</h1>
+            <div class="user-info">
+                <span id="user-name">Cargando...</span>
+                <button id="profile-btn" class="profile-btn">👤</button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="auctions">Subastas</button>
+            <button class="nav-tab" data-tab="favorites">Favoritos</button>
+            <button class="nav-tab" data-tab="profile">Perfil</button>
+        </nav>
+
+        <!-- Auctions Tab -->
+        <div id="auctions" class="tab-content active">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Buscar carros...">
+                <button id="search-btn">🔍</button>
+            </div>
+            
+            <div class="filters">
+                <select id="brand-filter">
+                    <option value="">Todas las marcas</option>
+                    <option value="toyota">Toyota</option>
+                    <option value="honda">Honda</option>
+                    <option value="ford">Ford</option>
+                    <option value="chevrolet">Chevrolet</option>
+                </select>
+                <select id="price-filter">
+                    <option value="">Todos los precios</option>
+                    <option value="0-5000">$0 - $5,000</option>
+                    <option value="5000-10000">$5,000 - $10,000</option>
+                    <option value="10000-20000">$10,000 - $20,000</option>
+                    <option value="20000+">$20,000+</option>
+                </select>
+            </div>
+
+            <div id="cars-grid" class="cars-grid">
+                <!-- Cars will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Favorites Tab -->
+        <div id="favorites" class="tab-content">
+            <div id="favorites-grid" class="cars-grid">
+                <div class="empty-state">
+                    <p>No tienes carros favoritos aún</p>
+                    <p>Agrega carros a favoritos desde las subastas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profile" class="tab-content">
+            <div class="profile-form">
+                <h2>Mi Perfil</h2>
+                <div class="form-group">
+                    <label for="display-name">Nombre para mostrar</label>
+                    <input type="text" id="display-name" placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Teléfono</label>
+                    <input type="tel" id="phone" placeholder="+1 234 567 8900">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="location">Ubicación</label>
+                    <input type="text" id="location" placeholder="Ciudad, País">
+                </div>
+                <button id="save-profile" class="save-btn">Guardar Perfil</button>
+            </div>
+
+            <div class="bidding-history">
+                <h3>Historial de Pujas</h3>
+                <div id="bidding-history-list">
+                    <!-- Bidding history will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Car Detail Modal -->
+    <div id="car-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="car-detail">
+                <!-- Car details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bidding Modal -->
+    <div id="bid-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="bid-form">
+                <h3>Hacer Puja</h3>
+                <div id="current-bid-info"></div>
+                <div class="form-group">
+                    <label for="bid-amount">Tu puja ($)</label>
+                    <input type="number" id="bid-amount" min="0" step="100">
+                </div>
+                <button id="place-bid" class="bid-btn">Hacer Puja</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
