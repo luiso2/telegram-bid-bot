@@ -7,9 +7,43 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--tg-theme-bg-color, #ffffff);
+    background: var(--tg-theme-bg-color, #f8f9fa);
     color: var(--tg-theme-text-color, #000000);
     line-height: 1.5;
+    overflow-x: hidden;
+}
+
+/* Smooth transitions for all elements */
+* {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading animations */
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+    40%, 43% { transform: translate3d(0, -8px, 0); }
+    70% { transform: translate3d(0, -4px, 0); }
+    90% { transform: translate3d(0, -2px, 0); }
 }
 
 .container {
@@ -139,16 +173,41 @@ body {
 .car-card {
     background: var(--tg-theme-bg-color, #ffffff);
     border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    position: relative;
+    animation: fadeIn 0.6s ease-out;
+}
+
+.car-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .car-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border-color: var(--tg-theme-link-color, #2481cc);
+}
+
+.car-card:hover::before {
+    opacity: 1;
+}
+
+.car-card:active {
+    transform: translateY(-4px) scale(1.01);
+    transition-duration: 0.1s;
 }
 
 .car-image {
@@ -192,28 +251,70 @@ body {
 
 .bid-btn {
     flex: 1;
-    padding: 0.5rem;
-    background: var(--tg-theme-button-color, #2481cc);
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, var(--tg-theme-button-color, #2481cc) 0%, #1a6ba8 100%);
     color: var(--tg-theme-button-text-color, #ffffff);
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     cursor: pointer;
     font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+}
+
+.bid-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.bid-btn:hover::before {
+    left: 100%;
+}
+
+.bid-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(36, 129, 204, 0.3);
+}
+
+.bid-btn:active {
+    transform: translateY(0);
+    animation: pulse 0.3s ease;
 }
 
 .favorite-btn {
-    padding: 0.5rem;
-    background: transparent;
-    border: 1px solid var(--tg-theme-hint-color, #ccc);
-    border-radius: 0.5rem;
+    padding: 0.75rem;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border: 2px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 0.75rem;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--tg-theme-link-color, #2481cc);
 }
 
 .favorite-btn.active {
-    background: var(--tg-theme-destructive-text-color, #ff4444);
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
     color: white;
-    border-color: var(--tg-theme-destructive-text-color, #ff4444);
+    border-color: #ff6b6b;
+    animation: bounce 0.6s ease;
+}
+
+.favorite-btn:active {
+    transform: scale(0.95);
 }
 
 /* Profile form */
@@ -404,6 +505,207 @@ body {
     }
 }
 
+/* Skeleton loading states */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 0.5rem;
+}
+
+.skeleton-card {
+    background: var(--tg-theme-bg-color, #ffffff);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.6s ease-out;
+}
+
+.skeleton-image {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+.skeleton-content {
+    padding: 1rem;
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 70%;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-details {
+    height: 16px;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-price {
+    height: 24px;
+    width: 50%;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.skeleton-btn {
+    height: 40px;
+    flex: 1;
+    border-radius: 0.75rem;
+}
+
+.skeleton-btn-small {
+    height: 40px;
+    width: 50px;
+    border-radius: 0.75rem;
+}
+
+/* Loading states for different components */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    gap: 1rem;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-top: 3px solid var(--tg-theme-link-color, #2481cc);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--tg-theme-hint-color, #666);
+    font-size: 0.9rem;
+}
+
+/* Success/Error states */
+.success-state, .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    gap: 1rem;
+    text-align: center;
+}
+
+.success-icon, .error-icon {
+    font-size: 3rem;
+    animation: bounce 0.6s ease;
+}
+
+.success-icon {
+    color: #4caf50;
+}
+
+.error-icon {
+    color: #f44336;
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 0.75rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    animation: slideUp 0.3s ease;
+    max-width: 300px;
+}
+
+.toast.success {
+    border-left: 4px solid #4caf50;
+}
+
+.toast.error {
+    border-left: 4px solid #f44336;
+}
+
+.toast.warning {
+    border-left: 4px solid #ff9800;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toast-icon {
+    font-size: 1.2rem;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Improved search and filters */
+.search-bar {
+    position: relative;
+}
+
+.search-bar input:focus {
+    border-color: var(--tg-theme-link-color, #2481cc);
+    box-shadow: 0 0 0 3px rgba(36, 129, 204, 0.1);
+    outline: none;
+}
+
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+}
+
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #f0f0f0);
+    transition: background-color 0.2s ease;
+}
+
+.suggestion-item:hover {
+    background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
 /* Telegram-specific styles */
 @media (max-width: 480px) {
     .header {
@@ -425,5 +727,12 @@ body {
     
     .car-card {
         margin-bottom: 0.5rem;
+    }
+    
+    .toast {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
     }
 } 

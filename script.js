@@ -196,12 +196,45 @@ function switchTab(tabName) {
 
 function loadCars() {
     const carsGrid = document.getElementById('cars-grid');
-    carsGrid.innerHTML = '';
     
-    appState.cars.forEach(car => {
-        const carCard = createCarCard(car);
-        carsGrid.appendChild(carCard);
-    });
+    // Show skeleton loading
+    showSkeletonLoading(carsGrid);
+    
+    // Simulate loading delay
+    setTimeout(() => {
+        carsGrid.innerHTML = '';
+        
+        appState.cars.forEach((car, index) => {
+            setTimeout(() => {
+                const carCard = createCarCard(car);
+                carCard.style.animationDelay = `${index * 0.1}s`;
+                carsGrid.appendChild(carCard);
+            }, index * 100);
+        });
+    }, 800);
+}
+
+function showSkeletonLoading(container) {
+    container.innerHTML = '';
+    
+    // Create 6 skeleton cards
+    for (let i = 0; i < 6; i++) {
+        const skeletonCard = document.createElement('div');
+        skeletonCard.className = 'skeleton-card';
+        skeletonCard.innerHTML = `
+            <div class="skeleton-image"></div>
+            <div class="skeleton-content">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-details"></div>
+                <div class="skeleton skeleton-price"></div>
+                <div class="skeleton-actions">
+                    <div class="skeleton skeleton-btn"></div>
+                    <div class="skeleton skeleton-btn-small"></div>
+                </div>
+            </div>
+        `;
+        container.appendChild(skeletonCard);
+    }
 }
 
 function createCarCard(car) {
@@ -289,16 +322,23 @@ function displayCars(cars) {
 
 function toggleFavorite(carId) {
     const index = appState.favorites.indexOf(carId);
+    const car = appState.cars.find(c => c.id === carId);
+    let isAdded = false;
+    
     if (index > -1) {
         appState.favorites.splice(index, 1);
+        showToast('❤️ Eliminado de favoritos', 'warning');
     } else {
         appState.favorites.push(carId);
+        showToast('💖 Agregado a favoritos', 'success');
+        isAdded = true;
     }
     
     localStorage.setItem('favorites', JSON.stringify(appState.favorites));
     
-    // Update UI
-    loadCars();
+    // Update UI with animation
+    updateFavoriteButton(carId, isAdded);
+    
     if (appState.currentTab === 'favorites') {
         loadFavorites();
     }
@@ -307,6 +347,25 @@ function toggleFavorite(carId) {
     if (tg.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
     }
+}
+
+function updateFavoriteButton(carId, isAdded) {
+    const favoriteButtons = document.querySelectorAll(`[onclick*="toggleFavorite(${carId})"]`);
+    favoriteButtons.forEach(btn => {
+        if (isAdded) {
+            btn.classList.add('active');
+            btn.innerHTML = '❤️';
+            btn.style.animation = 'bounce 0.6s ease';
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '🤍';
+        }
+        
+        // Reset animation
+        setTimeout(() => {
+            btn.style.animation = '';
+        }, 600);
+    });
 }
 
 function loadFavorites() {
@@ -417,15 +476,16 @@ function placeBid() {
     loadCars();
     closeModal();
     
-    // Show success message
+    // Show success message with toast
+    showToast(`🎉 ¡Puja exitosa! $${bidAmount.toLocaleString()}`, 'success');
+    
+    // Also show Telegram popup if available
     if (tg.showPopup) {
         tg.showPopup({
             title: '¡Puja exitosa!',
             message: `Tu puja de $${bidAmount.toLocaleString()} ha sido registrada.`,
             buttons: [{type: 'ok'}]
         });
-    } else {
-        alert(`¡Puja exitosa! Tu puja de $${bidAmount.toLocaleString()} ha sido registrada.`);
     }
     
     // Haptic feedback
@@ -459,15 +519,16 @@ function saveProfile() {
     appState.profile = profile;
     localStorage.setItem('profile', JSON.stringify(profile));
     
-    // Show success message
+    // Show success message with toast
+    showToast('✅ Perfil guardado exitosamente', 'success');
+    
+    // Also show Telegram popup if available
     if (tg.showPopup) {
         tg.showPopup({
             title: 'Perfil guardado',
             message: 'Tu perfil ha sido actualizado exitosamente.',
             buttons: [{type: 'ok'}]
         });
-    } else {
-        alert('Perfil guardado exitosamente.');
     }
     
     // Haptic feedback
@@ -519,4 +580,263 @@ setInterval(() => {
     } else if (appState.currentTab === 'favorites') {
         loadFavorites();
     }
-}, 30000); // Update every 30 seconds 
+}, 30000); // Update every 30 seconds
+
+// Toast notification system
+function showToast(message, type = 'success') {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.toast');
+    existingToasts.forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const iconMap = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span class="toast-icon">${iconMap[type] || iconMap.info}</span>
+            <span class="toast-message">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideUp 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Enhanced search with suggestions
+function setupSearchEnhancements() {
+    const searchInput = document.getElementById('search-input');
+    let searchSuggestions = null;
+    
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        
+        if (query.length < 2) {
+            hideSearchSuggestions();
+            return;
+        }
+        
+        const suggestions = getSuggestions(query);
+        showSearchSuggestions(suggestions);
+    });
+    
+    searchInput.addEventListener('blur', function() {
+        setTimeout(() => hideSearchSuggestions(), 150);
+    });
+}
+
+function getSuggestions(query) {
+    const suggestions = [];
+    const brands = [...new Set(appState.cars.map(car => car.brand))];
+    const titles = appState.cars.map(car => car.title);
+    
+    // Brand suggestions
+    brands.forEach(brand => {
+        if (brand.toLowerCase().includes(query)) {
+            suggestions.push({ type: 'brand', text: brand, icon: '🏷️' });
+        }
+    });
+    
+    // Title suggestions
+    titles.forEach(title => {
+        if (title.toLowerCase().includes(query)) {
+            suggestions.push({ type: 'title', text: title, icon: '🚗' });
+        }
+    });
+    
+    return suggestions.slice(0, 5);
+}
+
+function showSearchSuggestions(suggestions) {
+    hideSearchSuggestions();
+    
+    if (suggestions.length === 0) return;
+    
+    const searchBar = document.querySelector('.search-bar');
+    const suggestionsContainer = document.createElement('div');
+    suggestionsContainer.className = 'search-suggestions';
+    
+    suggestions.forEach(suggestion => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.innerHTML = `${suggestion.icon} ${suggestion.text}`;
+        item.addEventListener('click', () => {
+            document.getElementById('search-input').value = suggestion.text;
+            searchCars();
+            hideSearchSuggestions();
+        });
+        suggestionsContainer.appendChild(item);
+    });
+    
+    searchBar.appendChild(suggestionsContainer);
+}
+
+function hideSearchSuggestions() {
+    const suggestions = document.querySelector('.search-suggestions');
+    if (suggestions) suggestions.remove();
+}
+
+// Improved bidding experience
+function validateBidAmount(carId, amount) {
+    const car = appState.cars.find(c => c.id === carId);
+    if (!car) return { valid: false, message: 'Carro no encontrado' };
+    
+    if (amount < car.minBid) {
+        return { 
+            valid: false, 
+            message: `La puja mínima es $${car.minBid.toLocaleString()}` 
+        };
+    }
+    
+    if (amount <= car.currentBid) {
+        return { 
+            valid: false, 
+            message: `Tu puja debe ser mayor a $${car.currentBid.toLocaleString()}` 
+        };
+    }
+    
+    return { valid: true, message: 'Puja válida' };
+}
+
+// Enhanced placeBid with better validation
+function placeBidEnhanced() {
+    const carId = parseInt(document.getElementById('place-bid').dataset.carId);
+    const bidAmount = parseInt(document.getElementById('bid-amount').value);
+    
+    const validation = validateBidAmount(carId, bidAmount);
+    if (!validation.valid) {
+        showToast(validation.message, 'error');
+        return;
+    }
+    
+    // Show loading state
+    const bidButton = document.getElementById('place-bid');
+    const originalText = bidButton.textContent;
+    bidButton.textContent = 'Procesando...';
+    bidButton.disabled = true;
+    
+    // Simulate API call delay
+    setTimeout(() => {
+        const car = appState.cars.find(c => c.id === carId);
+        
+        // Update car bid
+        car.currentBid = bidAmount;
+        car.minBid = bidAmount + 500;
+        
+        // Add to bidding history
+        const bidRecord = {
+            carId: carId,
+            carTitle: car.title,
+            amount: bidAmount,
+            timestamp: new Date().toISOString(),
+            status: 'active'
+        };
+        
+        appState.biddingHistory.unshift(bidRecord);
+        localStorage.setItem('biddingHistory', JSON.stringify(appState.biddingHistory));
+        
+        // Update UI
+        loadCars();
+        closeModal();
+        
+        // Reset button
+        bidButton.textContent = originalText;
+        bidButton.disabled = false;
+        
+        // Show success message with toast
+        showToast(`🎉 ¡Puja exitosa! $${bidAmount.toLocaleString()}`, 'success');
+        
+        // Haptic feedback
+        if (tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    }, 1000);
+}
+
+// Touch gestures for mobile
+function setupTouchGestures() {
+    let startX, startY;
+    
+    document.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (!startX || !startY) return;
+        
+        const diffX = startX - e.touches[0].clientX;
+        const diffY = startY - e.touches[0].clientY;
+        
+        // Prevent default scroll if swiping horizontally
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            e.preventDefault();
+        }
+    });
+    
+    document.addEventListener('touchend', function(e) {
+        if (!startX || !startY) return;
+        
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+        
+        const diffX = startX - endX;
+        const diffY = startY - endY;
+        
+        // Swipe threshold
+        const threshold = 50;
+        
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+            if (diffX > 0) {
+                // Swiped left - next tab
+                switchToNextTab();
+            } else {
+                // Swiped right - previous tab
+                switchToPreviousTab();
+            }
+        }
+        
+        startX = null;
+        startY = null;
+    });
+}
+
+function switchToNextTab() {
+    const tabs = ['auctions', 'favorites', 'profile'];
+    const currentIndex = tabs.indexOf(appState.currentTab);
+    const nextIndex = (currentIndex + 1) % tabs.length;
+    switchTab(tabs[nextIndex]);
+}
+
+function switchToPreviousTab() {
+    const tabs = ['auctions', 'favorites', 'profile'];
+    const currentIndex = tabs.indexOf(appState.currentTab);
+    const prevIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
+    switchTab(tabs[prevIndex]);
+}
+
+// Initialize enhanced features
+document.addEventListener('DOMContentLoaded', function() {
+    // Original initialization
+    initTelegramApp();
+    initApp();
+    
+    // Enhanced features
+    setupSearchEnhancements();
+    setupTouchGestures();
+    
+    // Replace original placeBid with enhanced version
+    document.getElementById('place-bid').removeEventListener('click', placeBid);
+    document.getElementById('place-bid').addEventListener('click', placeBidEnhanced);
+}); 
