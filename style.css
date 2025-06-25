@@ -772,6 +772,8 @@ body {
     min-height: calc(100vh - 120px);
     padding: 2rem 1rem;
     background: var(--tg-theme-bg-color, #ffffff);
+    opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 .status-content {
@@ -867,6 +869,17 @@ body {
 .refresh-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(36, 129, 204, 0.3);
+}
+
+.refresh-btn:disabled {
+    opacity: 0.7;
+    transform: none;
+    cursor: not-allowed;
+}
+
+.refresh-btn.success {
+    background: linear-gradient(135deg, #28a745 0%, #20912b 100%);
+    animation: bounce 0.6s ease;
 }
 
 .support-btn {

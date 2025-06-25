@@ -228,12 +228,25 @@ function showMainApp() {
     
     if (nav) nav.style.display = 'flex';
     
-    // Hide status screen
+    // Hide status screen with smooth transition
     const statusScreen = document.getElementById('status-screen');
-    if (statusScreen) statusScreen.style.display = 'none';
+    if (statusScreen) {
+        statusScreen.style.opacity = '0';
+        setTimeout(() => {
+            statusScreen.style.display = 'none';
+        }, 300);
+    }
     
-    // Show appropriate tab
-    switchTab(appState.currentTab);
+    // Show appropriate tab with content
+    switchTab('auctions'); // Always start with auctions tab
+    
+    // Ensure content is loaded
+    if (appState.user.status === USER_STATUS.APPROVED) {
+        // Add welcome message
+        setTimeout(() => {
+            showToast('🚗 Welcome to Car Auction! You can now bid on cars.', 'success');
+        }, 1000);
+    }
 }
 
 function getStatusScreenContent() {
@@ -836,19 +849,26 @@ setInterval(() => {
 function refreshUserStatus() {
     showToast('🔄 Checking status...', 'info');
     
-    // Simulate API call
+    // Show loading state for better UX
+    const refreshButtons = document.querySelectorAll('[onclick="refreshUserStatus()"]');
+    refreshButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Checking...';
+    });
+    
+    // Simulate API call with automatic approval for demo
     setTimeout(() => {
-        // Simulate random status update (for demo purposes)
-        const statuses = [USER_STATUS.PENDING, USER_STATUS.APPROVED, USER_STATUS.REJECTED];
-        const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+        // In demo mode, always approve the user for testing
+        updateUserStatus(USER_STATUS.APPROVED);
+        showToast('🎉 Account approved! Welcome to Car Auction!', 'success');
         
-        // For demo, sometimes approve the user
-        if (Math.random() > 0.7) {
-            updateUserStatus(USER_STATUS.APPROVED);
-            showToast('🎉 Account approved! Welcome to Car Auction!', 'success');
-        } else {
-            showToast('📋 Status unchanged. Please check back later.', 'info');
-        }
+        // Load the main app content
+        setTimeout(() => {
+            loadCars();
+            loadProfile();
+            loadBiddingHistory();
+        }, 500);
+        
     }, 2000);
 }
 
@@ -858,6 +878,11 @@ function updateUserStatus(newStatus) {
     
     if (newStatus === USER_STATUS.APPROVED) {
         appState.user.approved_at = new Date().toISOString();
+        
+        // Show success haptic feedback
+        if (tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
     }
     
     updateUIForUserStatus();
@@ -1145,6 +1170,9 @@ function switchToPreviousTab() {
 function simulateApproval() {
     updateUserStatus(USER_STATUS.APPROVED);
     showToast('🎉 Account approved! (Debug)', 'success');
+    loadCars();
+    loadProfile();
+    loadBiddingHistory();
 }
 
 function simulateRejection() {
@@ -1160,6 +1188,12 @@ function simulateSuspension() {
 function resetToPending() {
     updateUserStatus(USER_STATUS.PENDING);
     showToast('⏳ Status reset to pending! (Debug)', 'info');
+}
+
+// Demo mode function - always approves for testing
+function enableDemoMode() {
+    console.log('🎮 Demo mode enabled - all status checks will result in approval');
+    showToast('🎮 Demo mode enabled - instant approval for testing', 'info');
 }
 
 // Add debug buttons to console (development only)
