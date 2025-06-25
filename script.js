@@ -19,10 +19,18 @@ function initTelegramApp() {
         const telegramUser = tg.initDataUnsafe.user;
         appState.user.name = telegramUser.first_name || 'User';
         appState.user.telegram_id = telegramUser.id;
-        
-        // Load user status from server (simulated)
-        loadUserStatus();
+    } else {
+        // Fallback for testing outside Telegram
+        appState.user.name = 'Demo User';
     }
+    
+    // Set user as approved for demo mode
+    appState.user.status = USER_STATUS.APPROVED;
+    
+    // Update UI with status indicator
+    setTimeout(() => {
+        updateUIForUserStatus();
+    }, 100);
     
     // Set up main button
     tg.MainButton.setText('Close');
@@ -30,17 +38,7 @@ function initTelegramApp() {
     tg.MainButton.show();
 }
 
-function loadUserStatus() {
-    // Simulate API call to check user status
-    // In real app, this would be an API call
-    const savedStatus = localStorage.getItem('userStatus');
-    if (savedStatus) {
-        appState.user.status = savedStatus;
-    }
-    
-    // Update UI based on user status
-    updateUIForUserStatus();
-}
+// Note: loadUserStatus function removed - demo mode always starts approved
 
 // User status constants
 const USER_STATUS = {
@@ -158,20 +156,21 @@ function initApp() {
     // Set up event listeners
     setupEventListeners();
     
-    // Check user status and load appropriate content
-    if (appState.user.status === USER_STATUS.APPROVED) {
-        // Load initial data for approved users
-        loadCars();
-        loadProfile();
-        loadBiddingHistory();
-    } else {
-        // Show appropriate status screen
-        showUserStatusScreen();
-    }
+    // DEMO MODE: Skip approval process and start with full access
+    // In production, this would check actual user status from backend
+    appState.user.status = USER_STATUS.APPROVED;
+    localStorage.setItem('userStatus', USER_STATUS.APPROVED);
+    
+    // Load initial data
+    loadCars();
+    loadProfile();
+    loadBiddingHistory();
+    
+    // Show main app directly (no status screen)
+    showMainApp();
 }
 
 function updateUIForUserStatus() {
-    const container = document.querySelector('.container');
     const userNameElement = document.getElementById('user-name');
     
     // Update user name with status indicator
@@ -180,12 +179,8 @@ function updateUIForUserStatus() {
         userNameElement.innerHTML = `${statusEmoji} ${appState.user.name}`;
     }
     
-    // Show/hide content based on status
-    if (appState.user.status !== USER_STATUS.APPROVED) {
-        showUserStatusScreen();
-    } else {
-        showMainApp();
-    }
+    // Always show main app in demo mode
+    showMainApp();
 }
 
 function getStatusEmoji(status) {
@@ -228,25 +223,14 @@ function showMainApp() {
     
     if (nav) nav.style.display = 'flex';
     
-    // Hide status screen with smooth transition
+    // Hide status screen if it exists
     const statusScreen = document.getElementById('status-screen');
     if (statusScreen) {
-        statusScreen.style.opacity = '0';
-        setTimeout(() => {
-            statusScreen.style.display = 'none';
-        }, 300);
+        statusScreen.style.display = 'none';
     }
     
     // Show appropriate tab with content
     switchTab('auctions'); // Always start with auctions tab
-    
-    // Ensure content is loaded
-    if (appState.user.status === USER_STATUS.APPROVED) {
-        // Add welcome message
-        setTimeout(() => {
-            showToast('🚗 Welcome to Car Auction! You can now bid on cars.', 'success');
-        }, 1000);
-    }
 }
 
 function getStatusScreenContent() {

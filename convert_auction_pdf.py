@@ -63,9 +63,25 @@ def convert_auction_pdf():
                     file.unlink()
             log_message("🧹 Carpeta de salida limpiada")
         
+        # Verificar instalación local de Poppler
+        poppler_path = None
+        local_poppler_paths = [
+            current_dir / "poppler" / "bin",
+            current_dir / "poppler" / "Library" / "bin"
+        ]
+        
+        for path in local_poppler_paths:
+            if path.exists() and (path / "pdftoppm.exe").exists():
+                poppler_path = str(path)
+                log_message(f"🔧 Usando Poppler local: {poppler_path}")
+                break
+        
         # Convertir PDF
         log_message("🔄 Convirtiendo páginas del PDF...")
-        images = convert_from_path(str(pdf_path), dpi=dpi)
+        if poppler_path:
+            images = convert_from_path(str(pdf_path), dpi=dpi, poppler_path=poppler_path)
+        else:
+            images = convert_from_path(str(pdf_path), dpi=dpi)
         
         total_pages = len(images)
         log_message(f"📑 Encontradas {total_pages} páginas")
