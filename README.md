@@ -10,6 +10,8 @@ Una aplicación web para Telegram que permite a los usuarios participar en subas
 - **👤 Gestión de Perfil**: Administra tu información personal
 - **📱 Compatible con Telegram**: Integración completa con Telegram Web Apps
 - **🎨 Diseño Responsivo**: Optimizado para dispositivos móviles
+- **🔐 Sistema de Aprobación**: Control de acceso por estados de usuario
+- **⏳ Estados de Usuario**: Pending, Approved, Rejected, Suspended
 
 ## 🛠️ Tecnologías
 
@@ -98,14 +100,43 @@ telegram-bid-bot/
 └── README.md           # Documentación
 ```
 
+## 🔐 Sistema de Estados de Usuario
+
+La aplicación implementa un sistema de aprobación con los siguientes estados:
+
+### Estados Disponibles:
+- **⏳ Pending**: Usuario nuevo esperando aprobación del administrador
+- **✅ Approved**: Usuario aprobado con acceso completo a todas las funciones
+- **❌ Rejected**: Usuario rechazado, puede solicitar una nueva revisión
+- **🚫 Suspended**: Usuario suspendido temporalmente con acceso limitado
+
+### Funcionalidades por Estado:
+
+| Función | Pending | Approved | Rejected | Suspended |
+|---------|---------|----------|----------|-----------|
+| Ver subastas | ❌ | ✅ | ❌ | ✅ |
+| Hacer pujas | ❌ | ✅ | ❌ | ❌ |
+| Agregar favoritos | ❌ | ✅ | ❌ | ❌ |
+| Editar perfil | ✅ | ✅ | ✅ | ✅ |
+| Contactar soporte | ✅ | ✅ | ✅ | ✅ |
+
+### Pantallas de Estado:
+Cada estado muestra una pantalla específica con:
+- Mensaje explicativo del estado actual
+- Acciones disponibles (verificar estado, contactar soporte, etc.)
+- Información sobre próximos pasos
+- Diseño visual distintivo por estado
+
 ## 🔄 Próximas Funcionalidades
 
+- [ ] Panel de administración para gestión de usuarios
 - [ ] Integración con API de subastas reales
-- [ ] Notificaciones push
+- [ ] Notificaciones push para cambios de estado
 - [ ] Chat en tiempo real
 - [ ] Sistema de pagos
 - [ ] Historial de transacciones
 - [ ] Ratings y reviews
+- [ ] Sistema de documentación para verificación
 
 ## 📱 Compatibilidad
 

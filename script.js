@@ -14,11 +14,14 @@ function initTelegramApp() {
     // Set up Telegram theme
     document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
     
-    // Show user info
-    const userNameElement = document.getElementById('user-name');
+    // Initialize user data
     if (tg.initDataUnsafe?.user) {
-        const user = tg.initDataUnsafe.user;
-        userNameElement.textContent = user.first_name || 'User';
+        const telegramUser = tg.initDataUnsafe.user;
+        appState.user.name = telegramUser.first_name || 'User';
+        appState.user.telegram_id = telegramUser.id;
+        
+        // Load user status from server (simulated)
+        loadUserStatus();
     }
     
     // Set up main button
@@ -27,13 +30,41 @@ function initTelegramApp() {
     tg.MainButton.show();
 }
 
+function loadUserStatus() {
+    // Simulate API call to check user status
+    // In real app, this would be an API call
+    const savedStatus = localStorage.getItem('userStatus');
+    if (savedStatus) {
+        appState.user.status = savedStatus;
+    }
+    
+    // Update UI based on user status
+    updateUIForUserStatus();
+}
+
+// User status constants
+const USER_STATUS = {
+    PENDING: 'pending',
+    APPROVED: 'approved',
+    REJECTED: 'rejected',
+    SUSPENDED: 'suspended'
+};
+
 // App state
 let appState = {
     currentTab: 'auctions',
     cars: [],
     favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
     profile: JSON.parse(localStorage.getItem('profile') || '{}'),
-    biddingHistory: JSON.parse(localStorage.getItem('biddingHistory') || '[]')
+    biddingHistory: JSON.parse(localStorage.getItem('biddingHistory') || '[]'),
+    user: {
+        status: localStorage.getItem('userStatus') || USER_STATUS.PENDING,
+        id: null,
+        name: null,
+        telegram_id: null,
+        approved_at: null,
+        pending_since: new Date().toISOString()
+    }
 };
 
 // Sample car data
@@ -127,10 +158,182 @@ function initApp() {
     // Set up event listeners
     setupEventListeners();
     
-    // Load initial data
-    loadCars();
-    loadProfile();
-    loadBiddingHistory();
+    // Check user status and load appropriate content
+    if (appState.user.status === USER_STATUS.APPROVED) {
+        // Load initial data for approved users
+        loadCars();
+        loadProfile();
+        loadBiddingHistory();
+    } else {
+        // Show appropriate status screen
+        showUserStatusScreen();
+    }
+}
+
+function updateUIForUserStatus() {
+    const container = document.querySelector('.container');
+    const userNameElement = document.getElementById('user-name');
+    
+    // Update user name with status indicator
+    if (userNameElement && appState.user.name) {
+        const statusEmoji = getStatusEmoji(appState.user.status);
+        userNameElement.innerHTML = `${statusEmoji} ${appState.user.name}`;
+    }
+    
+    // Show/hide content based on status
+    if (appState.user.status !== USER_STATUS.APPROVED) {
+        showUserStatusScreen();
+    } else {
+        showMainApp();
+    }
+}
+
+function getStatusEmoji(status) {
+    const emojiMap = {
+        [USER_STATUS.PENDING]: '⏳',
+        [USER_STATUS.APPROVED]: '✅',
+        [USER_STATUS.REJECTED]: '❌',
+        [USER_STATUS.SUSPENDED]: '🚫'
+    };
+    return emojiMap[status] || '❓';
+}
+
+function showUserStatusScreen() {
+    const container = document.querySelector('.container');
+    
+    // Hide navigation and content
+    const nav = document.querySelector('.nav-tabs');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    if (nav) nav.style.display = 'none';
+    tabContents.forEach(tab => tab.style.display = 'none');
+    
+    // Create or update status screen
+    let statusScreen = document.getElementById('status-screen');
+    if (!statusScreen) {
+        statusScreen = document.createElement('div');
+        statusScreen.id = 'status-screen';
+        statusScreen.className = 'status-screen';
+        container.appendChild(statusScreen);
+    }
+    
+    statusScreen.innerHTML = getStatusScreenContent();
+    statusScreen.style.display = 'block';
+}
+
+function showMainApp() {
+    // Show navigation and content
+    const nav = document.querySelector('.nav-tabs');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    if (nav) nav.style.display = 'flex';
+    
+    // Hide status screen
+    const statusScreen = document.getElementById('status-screen');
+    if (statusScreen) statusScreen.style.display = 'none';
+    
+    // Show appropriate tab
+    switchTab(appState.currentTab);
+}
+
+function getStatusScreenContent() {
+    const status = appState.user.status;
+    const userName = appState.user.name || 'User';
+    
+    switch (status) {
+        case USER_STATUS.PENDING:
+            return `
+                <div class="status-content pending">
+                    <div class="status-icon">⏳</div>
+                    <h2>Account Pending Approval</h2>
+                    <p>Hello ${userName}!</p>
+                    <p>Your account is currently being reviewed by our administrators.</p>
+                    <div class="status-details">
+                        <p><strong>What happens next?</strong></p>
+                        <ul>
+                            <li>Our team will review your account within 24-48 hours</li>
+                            <li>You'll receive a notification once approved</li>
+                            <li>Then you can start bidding on car auctions</li>
+                        </ul>
+                    </div>
+                    <div class="status-actions">
+                        <button onclick="refreshUserStatus()" class="refresh-btn">
+                            🔄 Check Status
+                        </button>
+                        <button onclick="contactSupport()" class="support-btn">
+                            💬 Contact Support
+                        </button>
+                    </div>
+                    <div class="status-footer">
+                        <p>Thank you for your patience!</p>
+                    </div>
+                </div>
+            `;
+            
+        case USER_STATUS.REJECTED:
+            return `
+                <div class="status-content rejected">
+                    <div class="status-icon">❌</div>
+                    <h2>Account Not Approved</h2>
+                    <p>Unfortunately, your account application was not approved.</p>
+                    <div class="status-details">
+                        <p><strong>Possible reasons:</strong></p>
+                        <ul>
+                            <li>Incomplete profile information</li>
+                            <li>Documentation requirements not met</li>
+                            <li>Previous violations of terms of service</li>
+                        </ul>
+                    </div>
+                    <div class="status-actions">
+                        <button onclick="reapplyAccount()" class="reapply-btn">
+                            📝 Reapply
+                        </button>
+                        <button onclick="contactSupport()" class="support-btn">
+                            💬 Contact Support
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+        case USER_STATUS.SUSPENDED:
+            return `
+                <div class="status-content suspended">
+                    <div class="status-icon">🚫</div>
+                    <h2>Account Suspended</h2>
+                    <p>Your account has been temporarily suspended.</p>
+                    <div class="status-details">
+                        <p><strong>During suspension you cannot:</strong></p>
+                        <ul>
+                            <li>Place bids on auctions</li>
+                            <li>Add items to favorites</li>
+                            <li>Access premium features</li>
+                        </ul>
+                    </div>
+                    <div class="status-actions">
+                        <button onclick="contactSupport()" class="support-btn">
+                            💬 Appeal Suspension
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+        default:
+            return `
+                <div class="status-content unknown">
+                    <div class="status-icon">❓</div>
+                    <h2>Status Unknown</h2>
+                    <p>We're having trouble determining your account status.</p>
+                    <div class="status-actions">
+                        <button onclick="refreshUserStatus()" class="refresh-btn">
+                            🔄 Refresh
+                        </button>
+                        <button onclick="contactSupport()" class="support-btn">
+                            💬 Contact Support
+                        </button>
+                    </div>
+                </div>
+            `;
+    }
 }
 
 function setupEventListeners() {
@@ -356,6 +559,12 @@ function displayCars(cars) {
 }
 
 function toggleFavorite(carId) {
+    // Check if user can add favorites
+    if (!canUserAddFavorites()) {
+        showToast('🔒 Please get your account approved to add favorites', 'warning');
+        return;
+    }
+    
     const index = appState.favorites.indexOf(carId);
     const car = appState.cars.find(c => c.id === carId);
     let isAdded = false;
@@ -458,6 +667,12 @@ function openCarDetail(carId) {
 }
 
 function openBidModal(carId) {
+    // Check if user can bid
+    if (!canUserBid()) {
+        showToast('🔒 Please get your account approved to place bids', 'warning');
+        return;
+    }
+    
     const car = appState.cars.find(c => c.id === carId);
     if (!car) return;
     
@@ -616,6 +831,71 @@ setInterval(() => {
         loadFavorites();
     }
 }, 30000); // Update every 30 seconds
+
+// User status management functions
+function refreshUserStatus() {
+    showToast('🔄 Checking status...', 'info');
+    
+    // Simulate API call
+    setTimeout(() => {
+        // Simulate random status update (for demo purposes)
+        const statuses = [USER_STATUS.PENDING, USER_STATUS.APPROVED, USER_STATUS.REJECTED];
+        const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+        
+        // For demo, sometimes approve the user
+        if (Math.random() > 0.7) {
+            updateUserStatus(USER_STATUS.APPROVED);
+            showToast('🎉 Account approved! Welcome to Car Auction!', 'success');
+        } else {
+            showToast('📋 Status unchanged. Please check back later.', 'info');
+        }
+    }, 2000);
+}
+
+function updateUserStatus(newStatus) {
+    appState.user.status = newStatus;
+    localStorage.setItem('userStatus', newStatus);
+    
+    if (newStatus === USER_STATUS.APPROVED) {
+        appState.user.approved_at = new Date().toISOString();
+    }
+    
+    updateUIForUserStatus();
+}
+
+function contactSupport() {
+    showToast('📞 Opening support channel...', 'info');
+    
+    // In a real app, this would open a support ticket or chat
+    if (tg.openLink) {
+        tg.openLink('https://t.me/support'); // Replace with actual support channel
+    } else {
+        showToast('💬 Please contact @support for assistance', 'info');
+    }
+}
+
+function reapplyAccount() {
+    showToast('📝 Starting reapplication process...', 'info');
+    
+    // Reset status to pending
+    updateUserStatus(USER_STATUS.PENDING);
+    appState.user.pending_since = new Date().toISOString();
+    
+    showToast('✅ Reapplication submitted! We\'ll review it soon.', 'success');
+}
+
+// Restrict functions based on user status
+function canUserBid() {
+    return appState.user.status === USER_STATUS.APPROVED;
+}
+
+function canUserAddFavorites() {
+    return appState.user.status === USER_STATUS.APPROVED;
+}
+
+function canUserEditProfile() {
+    return [USER_STATUS.PENDING, USER_STATUS.APPROVED].includes(appState.user.status);
+}
 
 // Toast notification system
 function showToast(message, type = 'success') {
@@ -859,6 +1139,38 @@ function switchToPreviousTab() {
     const currentIndex = tabs.indexOf(appState.currentTab);
     const prevIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
     switchTab(tabs[prevIndex]);
+}
+
+// Debug functions for testing (remove in production)
+function simulateApproval() {
+    updateUserStatus(USER_STATUS.APPROVED);
+    showToast('🎉 Account approved! (Debug)', 'success');
+}
+
+function simulateRejection() {
+    updateUserStatus(USER_STATUS.REJECTED);
+    showToast('❌ Account rejected! (Debug)', 'error');
+}
+
+function simulateSuspension() {
+    updateUserStatus(USER_STATUS.SUSPENDED);
+    showToast('🚫 Account suspended! (Debug)', 'warning');
+}
+
+function resetToPending() {
+    updateUserStatus(USER_STATUS.PENDING);
+    showToast('⏳ Status reset to pending! (Debug)', 'info');
+}
+
+// Add debug buttons to console (development only)
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    window.debugUserStatus = {
+        approve: simulateApproval,
+        reject: simulateRejection,
+        suspend: simulateSuspension,
+        pending: resetToPending
+    };
+    console.log('Debug functions available: window.debugUserStatus.approve(), .reject(), .suspend(), .pending()');
 }
 
 // Initialize enhanced features

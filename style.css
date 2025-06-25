@@ -766,6 +766,174 @@ body {
     border-bottom: none;
 }
 
+/* User Status Screens */
+.status-screen {
+    display: none;
+    min-height: calc(100vh - 120px);
+    padding: 2rem 1rem;
+    background: var(--tg-theme-bg-color, #ffffff);
+}
+
+.status-content {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: center;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.status-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+.status-content h2 {
+    color: var(--tg-theme-text-color, #000000);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.status-content p {
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.status-details {
+    background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.status-details p {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.status-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.status-details li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--tg-theme-hint-color, #666);
+}
+
+.status-details li::before {
+    content: '•';
+    color: var(--tg-theme-link-color, #2481cc);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.status-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.status-actions button {
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.refresh-btn {
+    background: linear-gradient(135deg, var(--tg-theme-button-color, #2481cc) 0%, #1a6ba8 100%);
+    color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(36, 129, 204, 0.3);
+}
+
+.support-btn {
+    background: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-link-color, #2481cc);
+    border: 2px solid var(--tg-theme-link-color, #2481cc);
+}
+
+.support-btn:hover {
+    background: var(--tg-theme-link-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    transform: translateY(-2px);
+}
+
+.reapply-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20912b 100%);
+    color: white;
+}
+
+.reapply-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+}
+
+.status-footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.status-footer p {
+    color: var(--tg-theme-hint-color, #666);
+    font-style: italic;
+    margin: 0;
+}
+
+/* Status-specific styling */
+.status-content.pending .status-icon {
+    color: #ffc107;
+}
+
+.status-content.rejected .status-icon {
+    color: #dc3545;
+}
+
+.status-content.suspended .status-icon {
+    color: #fd7e14;
+}
+
+.status-content.unknown .status-icon {
+    color: #6c757d;
+}
+
+/* User name with status indicator */
+.user-info #user-name {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Disabled state for restricted actions */
+.btn-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* Telegram-specific styles */
 @media (max-width: 480px) {
     .header {
@@ -794,5 +962,22 @@ body {
         right: 10px;
         left: 10px;
         max-width: none;
+    }
+    
+    .status-screen {
+        padding: 1rem 0.75rem;
+    }
+    
+    .status-content {
+        padding: 1.5rem;
+    }
+    
+    .status-actions {
+        gap: 0.75rem;
+    }
+    
+    .status-actions button {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
     }
 } 
